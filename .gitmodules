@@ -1,3 +1,6 @@
 [submodule "Assets/Models"]
 	path = Assets/Models
 	url = git@github.com:amateurculture/Models.git
+[submodule "Models"]
+	path = Models
+	url = git@github.com:amateurculture/Models.git
