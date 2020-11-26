@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 
-[RequireComponent(typeof(LightingController))]
-
 public class FogController : MonoBehaviour
 {
     [Range(0, 1)] public float fogDensity;
@@ -10,7 +8,7 @@ public class FogController : MonoBehaviour
     [Range(0, 1)] float gradientIndex;
     LightingController lightingController;
     float fogLerp;
-    float currentFogDensity = 0;
+    float currentFogDensity;
     float t1;
     bool isLerping;
     int frameSkip;
@@ -24,6 +22,7 @@ public class FogController : MonoBehaviour
         };
 
         GradientColorKey[] keys2 = {
+            /*
             new GradientColorKey(new Color32(15, 15, 15, 1), 0),
             new GradientColorKey(new Color32(114, 124, 135, 1), .04f),
             new GradientColorKey(new Color32(255, 255, 255, 1), .08f),
@@ -31,9 +30,20 @@ public class FogController : MonoBehaviour
             new GradientColorKey(new Color32(149, 77, 79, 1), .54f),
             new GradientColorKey(new Color32(15, 15, 15, 1), .58f),
             new GradientColorKey(new Color32(15, 15, 15, 1), 1)
+            */
+            new GradientColorKey(new Color32(7, 8, 11, 1), 0),
+            new GradientColorKey(new Color32(7, 8, 11, 1), .2f),
+            new GradientColorKey(new Color32(84, 125, 147, 1), .25f),
+            new GradientColorKey(new Color32(183, 191, 195, 1), .32f),
+            new GradientColorKey(new Color32(183, 191, 195, 1), .68f),
+            new GradientColorKey(new Color32(108, 76, 76, 1), .75f),
+            new GradientColorKey(new Color32(7, 8, 11, 1), .8f),
+            new GradientColorKey(new Color32(7, 8, 11, 1), 1f)
         };
         fogColor = new Gradient();
         fogColor.SetKeys(keys2, alphaKeys);
+
+        fogDensity = .02f;
     }
 
     private void Start()
@@ -53,15 +63,23 @@ public class FogController : MonoBehaviour
 
     public float GetGradientIndex()
     {
-        gradientIndex = lightingController.timeController.minute * .017f;
-        gradientIndex += lightingController.timeController.hour;
-        gradientIndex *= 0.04f;
+        if (lightingController == null) {
+            lightingController = GetComponent<LightingController>();
+        }
+
+        if (lightingController != null && lightingController.timeController != null) {
+            gradientIndex = lightingController.timeController.minute * .017f;
+            gradientIndex += lightingController.timeController.hour;
+            gradientIndex *= 0.04f;
+        } else {
+            gradientIndex = .5f;
+        }
         return gradientIndex;
     }
 
     public void UpdateFogColor()
     {
-        if (RenderSettings.sun == null || lightingController == null) return;
+        //if (RenderSettings.sun == null || lightingController == null) return;
 
         RenderSettings.fogColor = fogColor.Evaluate(GetGradientIndex());
     }
@@ -77,6 +95,7 @@ public class FogController : MonoBehaviour
             isLerping = false;
         }
         RenderSettings.fogDensity = currentFogDensity;
+        Debug.Log(RenderSettings.fogDensity);
     }
 
     private void Update()

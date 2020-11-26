@@ -2,10 +2,9 @@
 
 public class TimeController : MonoBehaviour
 {
-    public LightingController lightingController;
-    public GameObject atmosphere;
-    FogController fogController;
-
+    [HideInInspector] public LightingController lightingController;
+    [HideInInspector] FogController fogController;
+    
     public float day;
     public float hour;
     public float minute;
@@ -35,23 +34,25 @@ public class TimeController : MonoBehaviour
         daysInYear = 365;
         hoursInDay = 24;
         secondsInHour = 60;
+
+        lightingController = GetComponent<LightingController>();
+        fogController = GetComponent<FogController>();
     }
 
     private void Start()
     {
+        lightingController = GetComponent<LightingController>();
+        fogController = GetComponent<FogController>();
+        
         planetaryRotation = 15f * ((hour + (minute / 60f)) - 6f);
         gameTime = hour + (minute / 60f);
         secondsRemainingInMinute = Time.time + (secondsInHour / 60);
         adjustedSecondsInHour = secondsInHour / 60;
-
-        if (atmosphere != null)
-        {
-            lightingController = atmosphere.GetComponent<LightingController>();
-            fogController = atmosphere.GetComponent<FogController>();
-        }
-
         currentHour = hour;
         currentMinute = minute;
+
+        RenderSettings.sun.transform.eulerAngles = Vector3.zero;
+        RenderSettings.sun.transform.Rotate(new Vector3(15f * ((hour + (minute / 60f)) - 6f), 0, 0));
 
         UpdateTime();
         UpdateLighting();
@@ -112,7 +113,11 @@ public class TimeController : MonoBehaviour
             day += 1;
         }
     }
-    void UpdateLighting() { if (lightingController != null) lightingController.UpdateLighting(); }
+    void UpdateLighting() { 
+        RenderSettings.sun.transform.Rotate(.25f, 0, 0);
+        if (lightingController != null) 
+            lightingController.UpdateLighting(); 
+    }
 
     void UpdateFog() { if (fogController != null) fogController.UpdateFogColor(); }
 }

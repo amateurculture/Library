@@ -1,15 +1,17 @@
 ﻿using UnityEngine;
 
+[RequireComponent(typeof(ReflectionProbe))]
 public class LightingController : MonoBehaviour
 {
-    public Gradient skyColor;
-    public Gradient sunLight;
+    //public Gradient skyColor;
+    Gradient sunLight;
+    public Color32 sunColor;
     public Gradient ambientLight;
-    public FogController fogController;
-    public TimeController timeController;
-    public Light moon;
-    public ReflectionProbe reflectionProbe;
-    public int reflectionFrameSkip;
+    [HideInInspector] public FogController fogController;
+    [HideInInspector] public TimeController timeController;
+    //public Light moon;
+    [HideInInspector] public ReflectionProbe reflectionProbe;
+    int reflectionFrameSkip = 60;
     
     float gradientIndex;
     float lightLevel;
@@ -28,6 +30,41 @@ public class LightingController : MonoBehaviour
             }
         }
 
+/*
+        GradientColorKey[] skyColorKeys = {
+            new GradientColorKey(new Color32(30, 47, 70, 1), 0),
+            new GradientColorKey(new Color32(30, 47, 70, 1), 1),
+        };
+        skyColor.SetKeys(skyColorKeys, alphaKeys);
+*/
+        sunColor = Color.white;
+
+        GradientAlphaKey[] alphaKeys = {
+            new GradientAlphaKey(1, 0),
+            new GradientAlphaKey(1, 1)
+        };
+
+        GradientColorKey[] keys1 = {
+            new GradientColorKey(new Color32(8, 8, 10, 1), 0),
+            new GradientColorKey(new Color32(8, 8, 10, 1), .2f),
+            new GradientColorKey(new Color32(67, 84, 99, 1), .3f),
+            new GradientColorKey(new Color32(128, 128, 128, 1), .4f),
+            new GradientColorKey(new Color32(128, 128, 128, 1), .6f),
+            new GradientColorKey(new Color32(91, 67, 60, 1), .7f),
+            new GradientColorKey(new Color32(8, 8, 10, 1), .8f),
+            new GradientColorKey(new Color32(8, 8, 10, 1), 1f)
+        };
+
+        timeController = GetComponent<TimeController>();
+        ambientLight = new Gradient();
+        ambientLight.SetKeys(keys1, alphaKeys);
+
+        fogController = GetComponent<FogController>();
+        reflectionProbe = GetComponent<ReflectionProbe>();
+    }
+
+    private void Start()
+    {
         GradientAlphaKey[] alphaKeys = {
             new GradientAlphaKey(1, 0),
             new GradientAlphaKey(1, 1)
@@ -35,45 +72,37 @@ public class LightingController : MonoBehaviour
 
         GradientColorKey[] keys = {
             new GradientColorKey(Color.black, 0),
-            new GradientColorKey(Color.white, .08f),
-            new GradientColorKey(Color.white, .46f),
-            new GradientColorKey(Color.black, .54f),
-            new GradientColorKey(Color.black, 1)
+            new GradientColorKey(Color.black, .25f),
+            new GradientColorKey(Color.white, .32f),
+            new GradientColorKey(Color.white, .68f),
+            new GradientColorKey(Color.black, .75f),
+            new GradientColorKey(Color.black, 1f)
         };
         sunLight = new Gradient();
         sunLight.SetKeys(keys, alphaKeys);
 
-        GradientColorKey[] keys1 = {
-            new GradientColorKey(new Color32(25,25,25,1), 0),
-            new GradientColorKey(Color.gray, .08f),
-            new GradientColorKey(Color.gray, .5f),
-            new GradientColorKey(new Color32(25,25,25,1), .58f),
-            new GradientColorKey(new Color32(25,25,25,1), 1)
-        };
+        cameraMain = Camera.main;
 
         timeController = GetComponent<TimeController>();
-        ambientLight = new Gradient();
-        ambientLight.SetKeys(keys1, alphaKeys);
-        reflectionFrameSkip = 30;
-    }
+        fogController = GetComponent<FogController>();
+        reflectionProbe = GetComponent<ReflectionProbe>();
 
-    private void Start()
-    {
-        cameraMain = Camera.main;
+        RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
 
         if (RenderSettings.sun != null)
         {
-            RenderSettings.sun.transform.eulerAngles = Vector3.zero;
-            RenderSettings.sun.transform.Rotate(new Vector3(15f * ((timeController.hour + (timeController.minute / 60f)) - 6f), 0, 0));
-
             lightLevel = GetGradientIndex();
             RenderSettings.sun.intensity = sunLight.Evaluate(lightLevel).grayscale;
             RenderSettings.ambientLight = ambientLight.Evaluate(lightLevel);
+            RenderSettings.sun.color = sunColor;
         }
 
         if (reflectionProbe != null)
         {
             reflectionProbe.enabled = true;
+            reflectionProbe.mode = UnityEngine.Rendering.ReflectionProbeMode.Realtime;
+            reflectionProbe.refreshMode = UnityEngine.Rendering.ReflectionProbeRefreshMode.ViaScripting;
+            reflectionProbe.size = new Vector3(10000, 50, 10000);
             reflectionProbe.RenderProbe();
         }
     }
@@ -90,24 +119,33 @@ public class LightingController : MonoBehaviour
     public void UpdateLighting()
     {
         UpdateSunLight();
-        UpdateGeocentricSun();
         UpdateAmbientLight();
-        UpdateSkyColor();
+        //UpdateSkyColor();
     }
 
     float GetGradientIndex()
     {
-        gradientIndex = timeController.minute * .017f;
-        gradientIndex += timeController.hour;
-        gradientIndex *= 0.04f;
+        if (timeController != null) {
+            gradientIndex = timeController.minute * .017f;
+            gradientIndex += timeController.hour;
+            gradientIndex *= 0.04f;
+        } else {
+            gradientIndex = .5f;
+        }
         return gradientIndex;
     }
 
+/*
     void UpdateSkyColor()
     {
         gradientIndex = GetGradientIndex();
+
+        if (cameraMain == null) {
+            cameraMain = Camera.main;
+        }
         cameraMain.backgroundColor = skyColor.Evaluate(GetGradientIndex());
     }
+    */
 
     void UpdateAmbientLight()
     {
@@ -121,12 +159,7 @@ public class LightingController : MonoBehaviour
         lightLevel = RenderSettings.sun.intensity = sunLight.Evaluate(gradientIndex).grayscale;
 
         RenderSettings.sun.enabled = (lightLevel <= 0) ? false : true;
-
-        if (moon != null) moon.enabled = (lightLevel <= 0) ? true : false;
-    }
-
-    void UpdateGeocentricSun()
-    {
-        RenderSettings.sun.transform.Rotate(.25f, 0, 0);
+        RenderSettings.sun.color = sunColor;
+        //if (moon != null) moon.enabled = (lightLevel <= 0) ? true : false;
     }
 }
