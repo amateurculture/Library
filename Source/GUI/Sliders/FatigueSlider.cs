@@ -6,9 +6,11 @@ public class FatigueSlider : StatusSlider
         InitSlider();
     }
 
+/*
     void Update()
     {
         if (script != null)
             slider.value = (100-script.fatigue) / 100f;
     }
+    */
 }

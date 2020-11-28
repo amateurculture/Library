@@ -27,7 +27,7 @@ public class S_Agent
         //gender = agent.gender;
         attraction = agent.attraction;
         hunger = agent.hunger;
-        fatigue = agent.fatigue;
+        //fatigue = agent.fatigue;
         anxiety = agent.stress;
         strength = agent.vitality;
     }
@@ -43,7 +43,7 @@ public class S_Agent
         //agent.gender = gender;
         agent.attraction = attraction;
         agent.hunger = hunger;
-        agent.fatigue = fatigue;
+        //agent.fatigue = fatigue;
         agent.stress = anxiety;
         agent.vitality = strength;
         

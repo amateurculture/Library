@@ -3,49 +3,44 @@ using UnityEngine.Rendering.PostProcessing;
 
 public class QualityManager : MonoBehaviour
 {
-    public ReflectionProbe reflectionProbe;
-    [Range(0, 2)] public int qualityLevel;
-    [Range(24, 240)] public int frameRate;
-    bool enableReflections;
-    bool enableAmbientOcclusion;
-    bool enableDepthOfField;
-    public bool enableTonemapping;
-    bool enableHDR;
+    //ReflectionProbe reflectionProbe;
+    public int qualityLevel;
+    public int frameRate;
+    public bool tonemapping;
+    //public bool enableReflections;
+    public bool ambientOcclusion;
+    public bool depthOfField;
+    public bool HDR;
 
-    bool previousEnableReflections;
+    //bool previousEnableReflections;
     Camera postprocessingCamera;
     ColorGrading colorGrading;
-    DepthOfField depthOfField;
-    AmbientOcclusion ambientOcclusion;
+    DepthOfField dof;
+    AmbientOcclusion ao;
     PostProcessVolume postProcessingVolume;
     int frameSkip;
 
     private void Reset()
     {
         frameRate = 60;
-        qualityLevel = 2;
-        enableTonemapping = false;
+        qualityLevel = 3;
     }
 
     void Start()
     {
-        enableReflections = (qualityLevel == 0) ? false : true;
-        enableHDR = true;
-        enableAmbientOcclusion = true;
-        enableDepthOfField = false;
-
+        //reflectionProbe = GetComponent<ReflectionProbe>();
+        //enableReflections = (qualityLevel == 0) ? false : enableReflections;
         frameSkip = 120;
         postprocessingCamera = Camera.main;
         postProcessingVolume = postprocessingCamera.GetComponent<PostProcessVolume>();
         postProcessingVolume.profile.TryGetSettings(out colorGrading);
-        postProcessingVolume.profile.TryGetSettings(out depthOfField);
-        postProcessingVolume.profile.TryGetSettings(out ambientOcclusion);
+        postProcessingVolume.profile.TryGetSettings(out dof);
+        postProcessingVolume.profile.TryGetSettings(out ao);
         QualitySettings.SetQualityLevel(qualityLevel);
 
-        if (frameRate < 240)
-            Application.targetFrameRate = frameRate;
+        if (frameRate < 240) Application.targetFrameRate = frameRate;
         
-        previousEnableReflections = enableReflections;
+        //previousEnableReflections = enableReflections;
     }
 
     void Update()
@@ -55,21 +50,20 @@ public class QualityManager : MonoBehaviour
         if (Time.frameCount % frameSkip == 0)
         {
             QualitySettings.SetQualityLevel(qualityLevel);
-            enableReflections = (qualityLevel == 0) ? false : true;
+            //enableReflections = (qualityLevel == 0) ? false : true;
 
             Application.targetFrameRate = frameRate;
-            colorGrading.active = enableTonemapping;
-            depthOfField.active = enableDepthOfField;
-            ambientOcclusion.active = enableAmbientOcclusion;
-            postprocessingCamera.allowHDR = enableHDR;
 
-            if (reflectionProbe != null && previousEnableReflections != enableReflections)
-            {
-                reflectionProbe.enabled = enableReflections;
-                previousEnableReflections = enableReflections;
-
-                if (enableReflections) reflectionProbe.RenderProbe();
-            }
+            if (colorGrading != null)
+                colorGrading.active = tonemapping;
+            
+            if (dof != null)
+                dof.active = depthOfField;
+            
+            if (ao != null)
+                ao.active = ambientOcclusion;
+            
+            postprocessingCamera.allowHDR = HDR;
         }
     }
 }

@@ -5,15 +5,17 @@ public class TimeController : MonoBehaviour
     [HideInInspector] public LightingController lightingController;
     [HideInInspector] FogController fogController;
     
+    public float year;
     public float day;
     public float hour;
     public float minute;
-
-    [Header("Planetary Settings")]
+    [Space()]
     public float daysInYear;
     public float hoursInDay;
     public float secondsInHour;
-    public int frameRate;
+    //public int frameRate;
+
+    [Space()]
     public bool stopTime;
 
     [HideInInspector] float planetaryRotation;
@@ -27,10 +29,12 @@ public class TimeController : MonoBehaviour
 
     private void Reset()
     {
-        day = 0;
-        hour = currentHour = 0;
+        year = 2000;
+        day = 1;
+        hour = currentHour = 8;
         minute = currentMinute = 0;
-        frameRate = 60;
+
+        //frameRate = 60;
         daysInYear = 365;
         hoursInDay = 24;
         secondsInHour = 60;
@@ -43,7 +47,7 @@ public class TimeController : MonoBehaviour
     {
         lightingController = GetComponent<LightingController>();
         fogController = GetComponent<FogController>();
-        
+
         planetaryRotation = 15f * ((hour + (minute / 60f)) - 6f);
         gameTime = hour + (minute / 60f);
         secondsRemainingInMinute = Time.time + (secondsInHour / 60);
@@ -86,6 +90,17 @@ public class TimeController : MonoBehaviour
                 UpdateLighting();
                 UpdateFog();
             }
+            else if (stopTime && Time.frameCount % 3 == 0) {
+                planetaryRotation = 15f * ((hour + (minute / 60f)) - 6f);
+                gameTime = hour + (minute / 60f);
+                secondsRemainingInMinute = Time.time + (secondsInHour / 60);
+                adjustedSecondsInHour = secondsInHour / 60;
+                currentHour = hour;
+                currentMinute = minute;
+
+                RenderSettings.sun.transform.eulerAngles = Vector3.zero;
+                RenderSettings.sun.transform.Rotate(new Vector3(15f * ((hour + (minute / 60f)) - 6f), 0, 0));
+            }
         }
     }
 
@@ -110,9 +125,15 @@ public class TimeController : MonoBehaviour
         if (EndOfDay && !nextDay)
         {
             nextDay = true;
-            day += 1;
+            day ++;
+        }
+
+        if (day > daysInYear) {
+            day = 1;
+            year ++;
         }
     }
+
     void UpdateLighting() { 
         RenderSettings.sun.transform.Rotate(.25f, 0, 0);
         if (lightingController != null) 

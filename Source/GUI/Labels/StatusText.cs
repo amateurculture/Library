@@ -41,11 +41,13 @@ public class StatusText : MonoBehaviour
                 statusText.color = new Color(1, 0, 1, 1);
                 statusText.text = "INSANE";
             }
+            /*
             else if (script.fatigue == 100)
             {
                 statusText.color = Color.cyan;
                 statusText.text = "TIRED";
             }
+            */
             else
             {
                 statusText.text = "";

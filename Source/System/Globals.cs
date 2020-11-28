@@ -1,33 +1,19 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using System;
 using System.Linq;
+using System.Globalization;
+using Random = UnityEngine.Random;
 
 public class Globals
 {
     #region Initialization
 
-#if ENVIRO_HD && ENVIRO_LW
-    [HideInInspector]
-    public EnviroCore enviro;
-#endif
-
     public static Globals Instance { get { return Nested.instance; } }
     private class Nested { static Nested() { } internal static readonly Globals instance = new Globals(); }
-    
-    public Globals()
-    { 
-#if ENVIRO_HD && ENVIRO_LW
-        enviro = GameObject.FindObjectOfType<EnviroSkyLite>();
-        if (enviro == null)
-            enviro = GameObject.FindObjectOfType<EnviroSky>();
-#endif
-    }
     
     #endregion
 
     #region Game Types
-
     // todo move through governments every hundred years in order (barring interference); Each change of governments has a period of revolution where the game rules change and all in-groups fight each other for a year.
 
     public enum Government
@@ -102,19 +88,22 @@ public class Globals
     public enum Disease
     {
         Addiction = 1 << 0,
-        Blindness = 1 << 1,
-        Coma = 1 << 2,
-        Deafness = 1 << 3,
-        Dysphoria = 1 << 4,
-        Dystrophy = 1 << 5,
-        Hallucination = 1 << 6,
-        Handicapped = 1 << 7,
-        Infertility = 1 << 8,
-        Mutism = 1 << 9,
-        Paranoia = 1 << 10,
-        Pneumonia = 1 << 11,
-        Poisoning = 1 << 12,
-        Sociopathy = 1 << 13
+        Bipolar = 1 << 1,
+        Blind = 1 << 2,
+        Coma = 1 << 3,
+        Deaf = 1 << 4,
+        Depression = 1 << 5,
+        Dysphoria = 1 << 6,
+        Dystrophy = 1 << 7,
+        Handicapped = 1 << 8,
+        Infertile = 1 << 9,
+        Mania = 1 << 10,
+        Mutism = 1 << 11,
+        Paranoia = 1 << 12,
+        Pneumonia = 1 << 13,
+        Poisoned = 1 << 14,
+        Schizophrenia = 1 << 15,
+        Sociopathy = 1 << 16
     }
 
     public enum BodyPart
@@ -149,6 +138,32 @@ public class Globals
     {
         Residence,
         Restaurant
+    }
+
+    public enum Month
+    {
+        January,
+        February,
+        March,
+        April,
+        May,
+        June,
+        July,
+        August,
+        September,
+        October,
+        November,
+        December
+    }
+
+    public enum Era
+    {
+        Wild = 1 << 0,
+        Primitive = 1 << 1,
+        Medieval = 1 << 2,
+        Baroque = 1 << 3,
+        Modern = 1 << 4,
+        Future = 1 << 5
     }
 
     internal static float _ai_wait = 2f;
@@ -246,22 +261,6 @@ public class Globals
         mindcontrol = 1 << 2,
         masscontrol = 1 << 3,
         shield = 1 << 4
-    }
-
-    public enum Month
-    {
-        January,
-        February,
-        March,
-        April,
-        May,
-        June,
-        July,
-        August,
-        September,
-        October,
-        November,
-        December
     }
 
     public enum Day
@@ -516,19 +515,6 @@ public class Globals
     #endregion
 
     #region Helper Functions
-
-    public int GetMonth(int currentDay)
-    {
-#if ENVIRO_HD && ENVIRO_LW
-        int accumulatedDays = 0;
-        for (int month = 1; month <= 12; month++)
-        {
-            accumulatedDays += DateTime.DaysInMonth((int)enviro.currentYear, month);
-            if (currentDay <= accumulatedDays) return month;
-        }
-#endif
-        return -1;
-    }
 
     public List<GameObject> AgentListPlusPlayer()
     {

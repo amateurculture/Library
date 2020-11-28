@@ -8,5 +8,5 @@ public class Thing : MonoBehaviour
     public float vitality = 100f;
     public float value = 1f;
 
-    //public virtual void Use(Agent agent, InventoryPanel panel, int index) { }
+    public virtual void Use(Agent agent, InventoryPanel panel, int index) { }
 }

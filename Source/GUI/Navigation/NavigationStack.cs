@@ -1,34 +1,60 @@
-﻿using System.Collections.Generic;
+﻿//using Opsive.UltimateCharacterController.Camera;
+//using Opsive.UltimateCharacterController.Character;
+//using Opsive.UltimateCharacterController.Character.Abilities;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+
+/// <summary>
+/// GUI stack navigation for HUDs, interstitial screens, God camera, and menus.
+/// 
+/// Author: Fiona Schultz
+/// Last Modified: July-26-2019
+/// </summary>
 
 public class NavigationStack : Singleton<NavigationStack>
 {
-    protected NavigationStack() { }
-    protected bool menuActive;
-    protected bool hudActive;
-
-    protected List<GameObject> viewControllers;
-    protected GameObject player;
-
     public GameObject startMenu;
     public GameObject gameMenu;
-    public GameObject background;
-
-    [Header("============================")]
-    public GameObject events;
+    [Space(10)]
     public GameObject hud;
+    public GameObject god;
+    public GameObject smartphone;
+    public GameObject loadingScreen;
+    public GameObject eventMessage;
     public Stack<GameObject> stack;
     public bool startEnabled = false;
 
+    protected bool menuActive;
+    protected bool hudActive;
+    List<GameObject> viewControllers;
+    GameObject player;
+    GodCamera godCam;
+    bool usingOrbitCam;
+    bool previousHud;
+    bool previousGod;
+    bool inTransition;
+    bool inCar;
+
+    protected NavigationStack() { }
+    //UltimateCharacterLocomotion loco;
+    //Ability[] abilities;
+
     private void Awake()
     {
-        player = GameObject.FindGameObjectWithTag("Player");
         viewControllers = new List<GameObject>();
         stack = new Stack<GameObject>();
+        godCam = Camera.main.GetComponent<GodCamera>();
+        previousHud = true;
+        //loco = player.GetComponent<UltimateCharacterLocomotion>();
+        //abilities = loco.Abilities;
+        player = GameObject.FindGameObjectWithTag("Player");
     }
 
     private void OnEnable()
     {
+        if (startEnabled) Time.timeScale = 0;
+
         stack = new Stack<GameObject>();
 
         foreach (Transform child in transform)
@@ -39,7 +65,6 @@ public class NavigationStack : Singleton<NavigationStack>
 
         if (startEnabled)
         {
-            events.SetActive(false);
             hud.SetActive(false);
             PushView(startMenu);
         }
@@ -47,81 +72,168 @@ public class NavigationStack : Singleton<NavigationStack>
             CloseMenu();
     }
 
-    internal void PushView(GameObject view)
+    IEnumerator DelayedAction(GameObject outlet)
     {
-        Time.timeScale = 1f;
+        yield return new WaitForSecondsRealtime(2);
 
-        if (background != null)
-            background?.SetActive(true);
+        NavAction n = outlet.GetComponent<NavAction>();
+        if (n != null)
+            n.DoAction();
 
-        if (stack.Count > 0)
-            stack.Peek()?.SetActive(false);
-        else
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
-        stack.Push(view);
-        stack.Peek().SetActive(true);
-
-        menuActive = true;
-        Time.timeScale = 0f;
     }
 
-    internal void PopView()
+    internal void PushView(GameObject outlet)
     {
-        if (stack.Peek() == startMenu)
-            return;
+        /*
+        foreach (var f in abilities)
+        {
+            if (f.ToString().Contains("Jump"))
+            {
+                f.Enabled = false;
+                break;
+            }
+        }
+        */
 
-        stack.Peek()?.SetActive(false);
+        inTransition = true;
+        previousHud = hud.activeSelf;
+        previousGod = god.activeSelf;
+        hud.SetActive(false);
+        god.SetActive(false);
+        if (stack.Count > 0) stack.Peek()?.SetActive(false);
+        stack.Push(outlet);
+        stack.Peek().SetActive(true);
+        menuActive = true;
+        inTransition = false;
+
+        StartCoroutine(DelayedAction(outlet));
+    }
+
+    public void CompletePop()
+    {
+        if (stack.Count <= 0) return;
+
         stack.Pop();
 
         if (stack.Count > 0)
             stack.Peek()?.SetActive(true);
         else
             CloseMenu();
+
+        inTransition = false;
+    }
+
+    internal void PopView()
+    {
+        if (stack.Count <= 0) return;
+
+        inTransition = true;
+        GameObject p = stack.Peek();
+        if (p == startMenu) return;
+
+        Transition m = p.GetComponent<Transition>();
+
+        if (m != null)
+            m.Close();
+        else
+        {
+            p.SetActive(false);
+            CompletePop();
+        }
     }
 
     internal void CloseMenu()
     {
-        Time.timeScale = 1f;
+        inTransition = true;
         menuActive = false;
         hudActive = false;
-        hud.SetActive(true);
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        if (hud != null) hud.SetActive(previousHud);
+        if (god != null) god.SetActive(previousGod);
 
         foreach (GameObject view in viewControllers)
-            view.SetActive(false);
-        
+        {
+            Transition m = view.GetComponent<Transition>();
+            if (m != null) m.Close(); else view.SetActive(false);
+        }
         stack.Clear();
+        Time.timeScale = 1;
+        inTransition = false;
+
+        /* 
+        foreach (var f in abilities)
+        {
+            if (f.ToString().Contains("Jump"))
+            {
+                f.Enabled = true;
+                break;
+            }
+        }
+        */
+    }
+
+    public void EnterVehicle()
+    {
+        inCar = true;
+        CloseMenu();
+        if (hud != null) hud.SetActive(false);
+    }
+
+    public void ExitVehicle()
+    {
+        inCar = false;
+        if (hud != null) hud.SetActive(previousHud);
+    }
+
+    void DisableGodCamera()
+    {
+        QualitySettings.SetQualityLevel(2);
+        if (god != null) god.SetActive(false);
+        if (hud != null) hud.SetActive(previousHud);
+        foreach (MonoBehaviour v in player.GetComponents<MonoBehaviour>()) v.enabled = true;
+
+        if (usingOrbitCam)
+            godCam.GetComponent<OrbitCam>().enabled = true;
+        else
+        {
+            //godCam.GetComponent<CameraController>().enabled = true;
+            //godCam.GetComponent<CameraControllerHandler>().enabled = true;
+        }
+    }
+
+    void EnableGodCamera()
+    {
+        CloseMenu();
+        usingOrbitCam = godCam.GetComponent<OrbitCam>().enabled;
+        QualitySettings.SetQualityLevel(0);
+        if (hud != null) hud.SetActive(false);
+        if (god != null) god.SetActive(true);
+        foreach (MonoBehaviour v in player.GetComponents<MonoBehaviour>()) v.enabled = false;
+        godCam.GetComponent<OrbitCam>().enabled = false;
+        //godCam.GetComponent<CameraController>().enabled = false;
+        //godCam.GetComponent<CameraControllerHandler>().enabled = false;
+        Vector3 t = Camera.main.transform.position;
+        t.y = godCam.height;
+        t.x -= godCam.height / 2;
+        godCam.transform.position = t;
+        godCam.transform.eulerAngles = new Vector3(65, 90, 0);
     }
 
     private void Update()
     {
-        if (!menuActive)
-        {
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                if (Cursor.lockState == CursorLockMode.None)
+        if (player == null) return;
+
+        /*
+                if (!inCar && !menuActive && player.activeSelf && Input.GetButtonDown("Start"))
                 {
-                    Cursor.lockState = CursorLockMode.Locked;
-                    Cursor.visible = false;
+                    godCam.enabled = !godCam.enabled;
+                    if (godCam.enabled) EnableGodCamera(); else DisableGodCamera();
                 }
-                else
+                else if (!inCar && !menuActive && !godCam.enabled && !inTransition && (Input.GetKeyDown(KeyCode.Backspace) || Input.GetButtonDown("Back")))
                 {
-                    if (!hud.activeSelf)
-                        hud.SetActive(true);
-                    Cursor.lockState = CursorLockMode.None;
-                    Cursor.visible = true;
+                    if (player.activeSelf && smartphone.activeSelf) CloseMenu(); else PushView(smartphone);
                 }
-            }
-        }
-        else
-        {
-            if (stack.Peek() != startMenu && Input.GetKeyDown(KeyCode.Escape))
-                CloseMenu();
-        }
+                else if (stack.Count > 0 && stack.Peek() != startMenu && (Input.GetKeyDown(KeyCode.Backspace) || Input.GetButtonDown("Back"))) CloseMenu();
+            */
     }
 }

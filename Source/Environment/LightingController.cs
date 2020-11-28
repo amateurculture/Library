@@ -1,9 +1,7 @@
 ﻿using UnityEngine;
 
-[RequireComponent(typeof(ReflectionProbe))]
 public class LightingController : MonoBehaviour
 {
-    //public Gradient skyColor;
     Gradient sunLight;
     public Color32 sunColor;
     public Gradient ambientLight;
@@ -30,13 +28,6 @@ public class LightingController : MonoBehaviour
             }
         }
 
-/*
-        GradientColorKey[] skyColorKeys = {
-            new GradientColorKey(new Color32(30, 47, 70, 1), 0),
-            new GradientColorKey(new Color32(30, 47, 70, 1), 1),
-        };
-        skyColor.SetKeys(skyColorKeys, alphaKeys);
-*/
         sunColor = Color.white;
 
         GradientAlphaKey[] alphaKeys = {
@@ -61,6 +52,15 @@ public class LightingController : MonoBehaviour
 
         fogController = GetComponent<FogController>();
         reflectionProbe = GetComponent<ReflectionProbe>();
+
+        if (reflectionProbe != null)
+        {
+            reflectionProbe.enabled = true;
+            reflectionProbe.mode = UnityEngine.Rendering.ReflectionProbeMode.Realtime;
+            reflectionProbe.refreshMode = UnityEngine.Rendering.ReflectionProbeRefreshMode.OnAwake;
+            reflectionProbe.size = new Vector3(10000, 50, 10000);
+            reflectionProbe.RenderProbe();
+        }
     }
 
     private void Start()
@@ -101,7 +101,7 @@ public class LightingController : MonoBehaviour
         {
             reflectionProbe.enabled = true;
             reflectionProbe.mode = UnityEngine.Rendering.ReflectionProbeMode.Realtime;
-            reflectionProbe.refreshMode = UnityEngine.Rendering.ReflectionProbeRefreshMode.ViaScripting;
+            reflectionProbe.refreshMode = UnityEngine.Rendering.ReflectionProbeRefreshMode.OnAwake;
             reflectionProbe.size = new Vector3(10000, 50, 10000);
             reflectionProbe.RenderProbe();
         }
@@ -109,7 +109,7 @@ public class LightingController : MonoBehaviour
 
     void Update()
     {
-        if (Time.frameCount % reflectionFrameSkip == 0 && reflectionProbe != null)
+        if (Time.frameCount % reflectionFrameSkip == 0 && reflectionProbe != null && reflectionProbe.isActiveAndEnabled)
         {
             reflectionProbe.backgroundColor = cameraMain.backgroundColor;
             reflectionProbe.RenderProbe();
@@ -134,18 +134,6 @@ public class LightingController : MonoBehaviour
         }
         return gradientIndex;
     }
-
-/*
-    void UpdateSkyColor()
-    {
-        gradientIndex = GetGradientIndex();
-
-        if (cameraMain == null) {
-            cameraMain = Camera.main;
-        }
-        cameraMain.backgroundColor = skyColor.Evaluate(GetGradientIndex());
-    }
-    */
 
     void UpdateAmbientLight()
     {

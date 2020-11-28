@@ -41,7 +41,7 @@ public class Building : Container
                     agent.hunger = 0;
                     break;
                 case Globals.BuildingType.Residence:
-                    agent.fatigue = 0;
+                    //agent.fatigue = 0;
                     break;
                 default:
                     break;

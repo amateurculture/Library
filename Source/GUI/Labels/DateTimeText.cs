@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class DateTimeText : MonoBehaviour
 {
-    public TimeController Planet;
+    public TimeController timeController;
     private Text statusText;
     private TextMeshProUGUI statusUGUIText;
     private string textString;
@@ -22,11 +22,11 @@ public class DateTimeText : MonoBehaviour
     {
         if (Time.frameCount % 2 == 0)
         {
-            if (Planet != null)
+            if (timeController != null)
             {
-                ampmString = (Planet.hour > 12) ? "pm" : "am";
-                hourString = "" + ((ampmString == "am") ? ((int)Planet.hour).ToString("D2") : (((int)Planet.hour - 12)).ToString("D2"));
-                textString = "Day " + Planet.day + ", " + hourString + ":" + ((int)Planet.minute).ToString("D2") + " " + ampmString;
+                ampmString = (timeController.hour > 12) ? "pm" : "am";
+                hourString = "" + ((ampmString == "am") ? ((int)timeController.hour).ToString("D2") : (((int)timeController.hour - 12)).ToString("D2"));
+                textString = "Day " + timeController.day + ", " + timeController.year + " -- " + hourString + ":" + ((int)timeController.minute).ToString("D2") + " " + ampmString;
             }
             else textString = DateTime.Now.ToLongDateString() + " " + DateTime.Now.ToLongTimeString();
             

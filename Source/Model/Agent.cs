@@ -17,7 +17,7 @@ public class Agent : Container
 
     //[Range(0f, 100f)] public float thirst = 0f;
     [Range(0f, 100f)] public float hunger = 0f;
-    [Range(0f, 100f)] public float fatigue = 0f;
+    //[Range(0f, 100f)] public float fatigue = 0f;
     [Range(0f, 100f)] public float stress = 0f;
     
     /// Stress causes:
@@ -67,14 +67,14 @@ public class Agent : Container
         // TODO: calculate redution of stats based on enviro time
 
         hunger += .01f;
-        fatigue += .01f;
+        stress += .01f;
 
         hunger = (hunger > 100) ? 100 : hunger;
-        fatigue = (fatigue > 100) ? 100 : fatigue;
+        stress = (stress > 100) ? 100 : stress;
         base.vitality = (base.vitality > 100f) ? 100f : base.vitality;
 
         if (hunger == 100) base.vitality -= .01f;
-        if (fatigue == 100) stress += .01f;
+        if (stress == 100) stress += .01f;
     }
 
     #endregion
@@ -188,10 +188,12 @@ public class Agent : Container
     private void Reset()
     {
         Rigidbody rb = GetComponent<Rigidbody>();
-        rb.mass = 80f;
-        rb.drag = 0.5f;
-        rb.angularDrag = 0.5f;
-        rb.freezeRotation = true;
+        if (rb != null) {
+            rb.mass = 80f;
+            rb.drag = 0.5f;
+            rb.angularDrag = 0.5f;
+            rb.freezeRotation = true;
+        }
         base.vitality = 100;
         value = 1000;
         value = 100;
