@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
-using UnityStandardAssets.CrossPlatformInput;
+using UnityEngine.InputSystem;
+//using UnityStandardAssets.CrossPlatformInput;
 
 namespace UnityStandardAssets.Vehicles.Aeroplane
 {
@@ -22,12 +23,17 @@ namespace UnityStandardAssets.Vehicles.Aeroplane
         }
 
 
+
         private void FixedUpdate()
         {
             // Read input for the pitch, yaw, roll and throttle of the aeroplane.
-            float roll = CrossPlatformInputManager.GetAxis("Horizontal");
-            float pitch = CrossPlatformInputManager.GetAxis("Vertical");
-            bool airBrakes = CrossPlatformInputManager.GetButton("Fire1");
+            //float roll = CrossPlatformInputManager.GetAxis("Horizontal");
+            //float pitch = CrossPlatformInputManager.GetAxis("Vertical");
+            //bool airBrakes = CrossPlatformInputManager.GetButton("Fire1");
+
+            float roll = Gamepad.current.leftStick.left.ReadValue() + Gamepad.current.leftStick.right.ReadValue();
+            float pitch = Gamepad.current.leftStick.up.ReadValue() + Gamepad.current.leftStick.down.ReadValue();
+            bool airBrakes = Gamepad.current.aButton.IsPressed();
 
             // auto throttle up, or down if braking.
             float throttle = airBrakes ? -1 : 1;

@@ -1,5 +1,6 @@
 using UnityEngine;
-using UnityStandardAssets.CrossPlatformInput;
+using UnityEngine.InputSystem;
+//using UnityStandardAssets.CrossPlatformInput;
 
 namespace UnityStandardAssets.Vehicles.Car
 {
@@ -26,12 +27,12 @@ namespace UnityStandardAssets.Vehicles.Car
 
             if (!isDisabled)
             {
-                h = CrossPlatformInputManager.GetAxis("Horizontal");
+                //h = CrossPlatformInputManager.GetAxis("Horizontal");
+                h = Gamepad.current.leftStick.left.ReadValue() + Gamepad.current.leftStick.right.ReadValue();
 
                 unbiased = Input.GetAxis("Fire1") - Input.GetAxis("Fire2");
                 v = (unbiased > 0) ? unbiased : 0;
                 v2 = (unbiased < 0) ? unbiased : 0;
-
 
                 v = Input.GetAxis("Fire1");
                 v2 = Input.GetAxis("Fire2");

@@ -30,7 +30,7 @@ public class Agent : Container
     #endregion
 
     #region protected variables
-    [HideInInspector] public PlayerController playerController;
+    //[HideInInspector] public PlayerControllerOld playerController;
     protected Brain brain;
     [HideInInspector] public List<Meme> memory;
     [HideInInspector] public bool isWorking = false;

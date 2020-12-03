@@ -5,12 +5,12 @@ using UnityEngine.UI;
 public class ToggleInvertVertical : MonoBehaviour
 {
     GameObject player;
-    PlayerController playerController;
+    PlayerControllerOld playerController;
 
     private void OnEnable()
     {
         player = GameObject.FindGameObjectWithTag("Player");
-        playerController = player?.GetComponent<PlayerController>();
+        playerController = player?.GetComponent<PlayerControllerOld>();
         GetComponent<Toggle>().isOn = playerController?.invertVertical ?? false;
     }
 

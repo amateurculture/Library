@@ -1,23 +1,24 @@
 ﻿using UnityEngine;
-using UnityEngine.Rendering.PostProcessing;
+//using UnityEngine.Rendering.PostProcessing;
 
 public class QualityManager : MonoBehaviour
 {
     //ReflectionProbe reflectionProbe;
     public int qualityLevel;
     public int frameRate;
-    public bool tonemapping;
+    //public bool tonemapping;
     //public bool enableReflections;
-    public bool ambientOcclusion;
-    public bool depthOfField;
-    public bool HDR;
+    //public bool ambientOcclusion;
+    //public bool depthOfField;
+    //public bool HDR;
 
+    Camera cam;
     //bool previousEnableReflections;
-    Camera postprocessingCamera;
-    ColorGrading colorGrading;
-    DepthOfField dof;
-    AmbientOcclusion ao;
-    PostProcessVolume postProcessingVolume;
+    //Camera postprocessingCamera;
+    //ColorGrading colorGrading;
+    //DepthOfField dof;
+    //AmbientOcclusion ao;
+    //PostProcessVolume postProcessingVolume;
     int frameSkip;
 
     private void Reset()
@@ -28,14 +29,19 @@ public class QualityManager : MonoBehaviour
 
     void Start()
     {
+        Screen.SetResolution(1920, 1080, FullScreenMode.ExclusiveFullScreen, 60);
+
         //reflectionProbe = GetComponent<ReflectionProbe>();
         //enableReflections = (qualityLevel == 0) ? false : enableReflections;
         frameSkip = 120;
+        cam = Camera.main;
+        /*
         postprocessingCamera = Camera.main;
-        postProcessingVolume = postprocessingCamera.GetComponent<PostProcessVolume>();
+        postProcessingVolume = GetComponent<PostProcessVolume>();
         postProcessingVolume.profile.TryGetSettings(out colorGrading);
         postProcessingVolume.profile.TryGetSettings(out dof);
         postProcessingVolume.profile.TryGetSettings(out ao);
+        */
         QualitySettings.SetQualityLevel(qualityLevel);
 
         if (frameRate < 240) Application.targetFrameRate = frameRate;
@@ -54,6 +60,7 @@ public class QualityManager : MonoBehaviour
 
             Application.targetFrameRate = frameRate;
 
+/*
             if (colorGrading != null)
                 colorGrading.active = tonemapping;
             
@@ -62,8 +69,9 @@ public class QualityManager : MonoBehaviour
             
             if (ao != null)
                 ao.active = ambientOcclusion;
-            
-            postprocessingCamera.allowHDR = HDR;
+            */
+
+            //cam.allowHDR = HDR;
         }
     }
 }
